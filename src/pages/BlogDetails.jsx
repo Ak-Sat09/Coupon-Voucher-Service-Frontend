@@ -71,20 +71,24 @@ export default function BlogDetail() {
     }
   };
 
-  const handleAddComment = async () => {
-    if (!commentText.trim()) return;
+ const handleAddComment = async () => {
+  if (!commentText.trim()) return; // prevent empty comment
 
-    setIsSubmittingComment(true);
-    try {
-      await addComment(id, { text: commentText });
-      setCommentText("");
-      await loadComments();
-    } catch (err) {
-      console.error("Error adding comment:", err);
-    } finally {
-      setIsSubmittingComment(false);
-    }
-  };
+  setIsSubmittingComment(true);
+
+  try {
+    // Send comment text to backend
+    await addComment(id, commentText); // just pass text
+
+    setCommentText("");        // clear input
+    await loadComments();      // reload comments list
+  } catch (err) {
+    console.error("Error adding comment:", err);
+  } finally {
+    setIsSubmittingComment(false); // re-enable button
+  }
+};
+
 
   const copyLink = async () => {
     try {
