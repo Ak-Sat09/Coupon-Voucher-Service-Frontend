@@ -1,52 +1,43 @@
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
-import Login from "./components/Login";
-import Register from "./components/Register";
-import Navbar from "./components/Navbar";
-
-import BlogList from "./pages/BlogsList";
-import BlogDetail from "./pages/BlogDetails";
-import CreateBlog from "./pages/CreateBlog";
-
-import { isAuthenticated } from "./utils/auth";
-import Portfolio from "./portfolio/Portfolio";
+import LoginPage from './pages/Login';
+import RegisterPage from './pages/Register';
+import Dashboard from './components/coupons';
+import SellerDashboard from './components/SellerDashboard';
 
 function App() {
   return (
     <>
-      <Navbar />
-
       <Routes>
-        {/* Default */}
-        <Route path="/" element={<Navigate to="/blogs" />} />
+        {/* Default → login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Auth Routes */}
-        <Route
-          path="/login"
-          element={isAuthenticated() ? <Navigate to="/blogs" /> : <Login />}
-        />
-        <Route
-          path="/register"
-          element={isAuthenticated() ? <Navigate to="/blogs" /> : <Register />}
-        />
+        {/* Auth routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
-        {/* Public Blog Routes */}
-        <Route path="/blogs" element={<BlogList />} />
-        <Route path="/blogs/:id" element={<BlogDetail />} />
-
-        {/* Protected Route */}
-        <Route
-          path="/create"
-          element={isAuthenticated() ? <CreateBlog /> : <Navigate to="/login" />}
-        />
-
-        {/* Portfolio */}
-        <Route path="/portfolio" element={<Portfolio />} />
-
-        {/* 404 */}
-        <Route path="*" element={<h2>404 - Page Not Found</h2>} />
+ <Route path="/coupons" element={<Dashboard />} />
+ <Route path="/sellerDashboard" element={<SellerDashboard />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            fontFamily: "'Mulish', sans-serif",
+            fontSize: '13px',
+            background: '#1a3328',
+            color: '#f5f0e8',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            border: '1px solid rgba(255,255,255,0.08)',
+          },
+        }}
+      />
     </>
   );
 }

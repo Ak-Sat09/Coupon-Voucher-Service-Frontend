@@ -16,4 +16,4 @@ export const loginUser = async (user) => {
     body: JSON.stringify(user),
   });
   return response.json();
-}; 
+};
