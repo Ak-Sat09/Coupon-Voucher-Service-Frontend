@@ -440,6 +440,7 @@ export default function Dashboard() {
               const isCopied = copiedId === coupon.id;
               const isReq    = requestingId === coupon.id;
               const msg      = requestMsg.id === coupon.id ? requestMsg : null;
+              console.log(expiring);
 
               return (
                 <article
