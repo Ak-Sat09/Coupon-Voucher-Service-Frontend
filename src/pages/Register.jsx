@@ -394,7 +394,7 @@ export default function Register() {
 
               <div className="terms">
                 <input type="checkbox" id="terms" checked={agreed} onChange={e=>setAgreed(e.target.checked)}/>
-                <label htmlFor="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+                <label htmlFor="terms">I agree to the <a href="/">Terms of Service</a> and <a href="/">Privacy Policy</a></label>
               </div>
 
               <button type="submit" disabled={loading} aria-busy={loading} className="sub-btn">

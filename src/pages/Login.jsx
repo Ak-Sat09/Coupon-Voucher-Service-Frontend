@@ -475,7 +475,7 @@ export default function Login() {
                 {errors.password && <span className="em" role="alert">{errors.password}</span>}
               </div>
 
-              <div className="fr"><a href="#" className="fg">Forgot password?</a></div>
+              <div className="fr"><a href="/" className="fg">Forgot password?</a></div>
 
               <button type="submit" disabled={loading} aria-busy={loading} className="sub-btn">
                 {loading
