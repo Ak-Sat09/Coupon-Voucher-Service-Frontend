@@ -384,20 +384,7 @@ export default function CouponDetail() {
         </div>
       </div>
     </>
-  );
-
-  const discount   = detail.discount   ?? "70%";
-  const category   = detail.category   ?? "Fashion";
-  const expiry     = detail.expiry      ?? "2h 14m";
-  const claimed    = detail.claimed     ?? "847";
-  const seller     = detail.seller      ?? "CouponVault Partner";
-  const isFlash    = detail.isFlash     ?? true;
-  const termsArr   = detail.terms ?? [
-    "Valid for one-time use per account only.",
-    "Cannot be combined with other offers or promotions.",
-    "Expires as indicated — no extensions granted.",
-    "Applicable on full-price items only.",
-  ];
+  ); 
 
   return (
     <>
@@ -438,18 +425,7 @@ export default function CouponDetail() {
           <div className="hero-card">
             <div className="hero-card__bar"/>
             <div className="hero-card__body">
-
-              {/* Badges */}
-              <div className="eyerow">
-                <span className="badge badge--violet">
-                  <span className="badge__dot"/>
-                  {category}
-                </span>
-                {isFlash && (
-                  <span className="badge badge--lime">⚡ Flash Deal</span>
-                )}
-                <span className="badge badge--amber">Expires in {expiry}</span>
-              </div>
+ 
 
               {/* Title */}
               <h1 className="hero-card__title">{detail.name}</h1>
@@ -472,25 +448,7 @@ export default function CouponDetail() {
                   </button>
                 </div>
               </div>
-
-              {/* Meta Stats */}
-              <div className="meta-grid">
-                <div className="meta-card">
-                  <div className="meta-card__ico">🏷️</div>
-                  <div className="meta-card__val"><span className="ac">{discount}</span></div>
-                  <div className="meta-card__key">Discount</div>
-                </div>
-                <div className="meta-card">
-                  <div className="meta-card__ico">👥</div>
-                  <div className="meta-card__val">{claimed}<span className="ac">+</span></div>
-                  <div className="meta-card__key">Claimed</div>
-                </div>
-                <div className="meta-card">
-                  <div className="meta-card__ico">🏪</div>
-                  <div className="meta-card__val" style={{fontSize:13,fontWeight:700,letterSpacing:"-0.01em"}}>{seller}</div>
-                  <div className="meta-card__key">Seller</div>
-                </div>
-              </div>
+ 
 
               {/* CTA */}
               <div className="cta-row">
@@ -525,13 +483,7 @@ export default function CouponDetail() {
             </div>
           </div>
 
-          {/* Terms Card */}
-          <div className="terms-card">
-            <div className="terms-card__head">Terms &amp; Conditions</div>
-            <ul className="terms-list">
-              {termsArr.map((t, i) => <li key={i}>{t}</li>)}
-            </ul>
-          </div>
+          
 
         </main>
       </div>

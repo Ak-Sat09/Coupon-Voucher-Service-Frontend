@@ -7,6 +7,7 @@ import RegisterPage from "./pages/Register";
 import Dashboard from "./components/Dashboard";
 import CouponDetail from "./components/CouponDetails";
 import SellerDashboard from "./components/SellerDashboard";
+import RoleSelect from "./components/RoleSelect";
 
 function App() {
   return (
@@ -26,6 +27,11 @@ function App() {
 
         <Route path="/seller" element={<SellerDashboard />} />
 
+
+
+<Route path="/role" element={<RoleSelect />} />
+
+        
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -427,41 +427,23 @@ function CouponCard({ c, onView, onCopy, copiedId }) {
   const soon = m.expDays <= 5;
 
   return (
-    <div className="card" style={{ animationDelay: `${(c.id % 8) * 0.06}s` }}>
-      <div className={`card__bar ${m.bar}`}/>
+    <div className="card">
+     
       <div className="card__body">
+ 
 
-        <div className="card__store">
-          <div className="card__store-ic">{m.store}</div>
-          <span className="card__store-name">{c.name?.split(" ")[0] ?? "Store"}</span>
-          {m.badge && (
-            <div className="card__badges">
-              <span className={`badge ${m.badge.cls}`}>{m.badge.label}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="card__disc">
-          <div className="card__disc-val">{m.discount}<span>%</span></div>
-          <div className="card__disc-off">OFF</div>
-        </div>
-
+        
         <div className="card__name">{c.name}</div>
         <div className="card__desc">{c.description}</div>
 
-        <div className="card__code-row" onClick={() => onCopy(c.id, m.code)}>
-          <span className="card__code">{m.code}</span>
-          <span className={`card__copy ${copiedId === c.id ? "card__copy--done" : ""}`}>
-            {copiedId === c.id ? "✓ Copied!" : "TAP TO COPY"}
-          </span>
-        </div>
+     
 
         <div className="card__meta">
           <div className="card__exp">
             <span className={`card__exp-dot ${soon ? "card__exp-dot--soon" : ""}`}/>
             {soon ? `Expires in ${m.expDays}d` : `Valid ${m.expDays} days`}
           </div>
-          <div className="card__claimed">{m.claimed.toLocaleString()} claimed</div>
+          
         </div>
       </div>
 
@@ -473,14 +455,13 @@ function CouponCard({ c, onView, onCopy, copiedId }) {
     </div>
   );
 }
-
-const FILTERS = ["All", "Hot Deals", "New", "Exclusive", "Expiring Soon"];
+ 
 
 export default function Dashboard() {
   const [coupons, setCoupons]     = useState([]);
   const [loading, setLoading]     = useState(true);
   const [query, setQuery]         = useState("");
-  const [activeFilter, setFilter] = useState("All");
+  const [activeFilter] = useState("All");
   const [copiedId, setCopiedId]   = useState(null);
   const [toastMsg, setToastMsg]   = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -514,10 +495,8 @@ export default function Dashboard() {
     const matchQ = !q || c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q);
     return matchQ;
   });
-
-  const totalSaved  = coupons.length * 847;
-  const activeCnt   = coupons.length;
-  const avgDiscount = coupons.length ? 35 : 0;
+ 
+  const activeCnt   = coupons.length; 
 
   return (
     <>
@@ -529,14 +508,14 @@ export default function Dashboard() {
           <div className="brand">
             <div className="brand__ic">🏷️</div>
             <span className="brand__name">CouponVault</span>
-            <span className="brand__tag">Live</span>
+           
           </div>
           <div className="topbar__right">
             <div className="topbar__badge">
               <span className="topbar__dot"/>
               {activeCnt} live deals
             </div>
-            <div className="topbar__avatar" title="Profile">CV</div>
+            
           </div>
         </header>
 
@@ -546,10 +525,7 @@ export default function Dashboard() {
           {/* Page Header */}
           <div className="ph">
             <div className="ph__l">
-              <div className="ph__eyebrow">
-                <span className="ph__eyebrow-dot"/>
-                Members Dashboard
-              </div>
+             
               <h1 className="ph__h1">
                 Your <span>Deals.</span>
               </h1>
@@ -572,43 +548,9 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Stat Strip */}
-          <div className="stats">
-            <div className="stat">
-              <div className="stat__ic stat__ic--v">🏷️</div>
-              <div className="stat__val">{activeCnt}<span>+</span></div>
-              <div className="stat__key">Active Coupons</div>
-            </div>
-            <div className="stat">
-              <div className="stat__ic stat__ic--l">💰</div>
-              <div className="stat__val">₹{(totalSaved/100000).toFixed(1)}<span>L</span></div>
-              <div className="stat__key">Total Saved</div>
-            </div>
-            <div className="stat">
-              <div className="stat__ic stat__ic--o">⚡</div>
-              <div className="stat__val">{avgDiscount}<span>%</span></div>
-              <div className="stat__key">Avg Discount</div>
-            </div>
-            <div className="stat">
-              <div className="stat__ic stat__ic--g">✦</div>
-              <div className="stat__val">12<span>K</span></div>
-              <div className="stat__key">Partner Sellers</div>
-            </div>
-          </div>
+         
 
-          {/* Filter Pills */}
-          <div className="filters">
-            {FILTERS.map(f => (
-              <button
-                key={f}
-                className={`pill ${activeFilter === f ? "pill--active" : ""}`}
-                onClick={() => setFilter(f)}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
+       
           {/* Section Label */}
           <div className="sec-label">
             <div className="sec-label__t">
