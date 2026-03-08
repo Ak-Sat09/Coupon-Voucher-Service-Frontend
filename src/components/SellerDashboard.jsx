@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = "https://couponservice-latest-68dz.onrender.com";
 
 function getToken() {
   return localStorage.getItem("token") || sessionStorage.getItem("token") || "";
