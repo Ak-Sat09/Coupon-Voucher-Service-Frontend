@@ -344,7 +344,7 @@ export default function Login() {
     setLoading(true); setMsg({ text:"", type:"" });
     try {
       const res = await loginUser(form);
-      if (res.success) { setToken(res.data); navigate("/coupons"); }
+      if (res.success) { setToken(res.data); navigate("/role"); }
       else { setMsg({ text: res.message || "Invalid credentials.", type:"error" }); pwRef.current?.select(); }
     } catch { setMsg({ text:"Network error. Try again.", type:"error" }); }
     finally { setLoading(false); }
