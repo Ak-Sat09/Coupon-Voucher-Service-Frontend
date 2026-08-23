@@ -1,4 +1,4 @@
-export const API_BASE = "https://couponservice-latest-68dz.onrender.com";
+export const API_BASE = "http://localhost:9090";
 
 export function getToken() {
   return localStorage.getItem("token") || sessionStorage.getItem("token") || "";
