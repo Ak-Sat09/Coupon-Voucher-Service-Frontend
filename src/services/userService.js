@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8080/api/users";
+const BASE_URL = "https://chronicle-blogs.duckdns.org/api/users";
 
 export const registerUser = async (user) => {
   const response = await fetch(`${BASE_URL}/register`, {
