@@ -1,4 +1,4 @@
-export const API_BASE = "http://localhost:9090";
+export const API_BASE = "https://chronicle-blogs.duckdns.org";
 
 export function getToken() {
   return localStorage.getItem("token") || sessionStorage.getItem("token") || "";
