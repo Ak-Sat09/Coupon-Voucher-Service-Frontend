@@ -73,6 +73,90 @@ export async function deleteCoupon(id) {
   if (!res.ok) throw new Error("Failed to delete coupon");
 }
 
+export async function getCouponVerification(id) {
+  const res = await fetch(`${API_BASE}/api/coupons/${id}/verification`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function voteCouponVerification(id, worked) {
+  const res = await fetch(`${API_BASE}/api/coupons/${id}/verification`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ worked }),
+  });
+  return readJson(res);
+}
+
+export async function getSavedState(id) {
+  const res = await fetch(`${API_BASE}/api/coupons/${id}/save`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function saveCoupon(id) {
+  const res = await fetch(`${API_BASE}/api/coupons/${id}/save`, {
+    method: "POST",
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function unsaveCoupon(id) {
+  const res = await fetch(`${API_BASE}/api/coupons/${id}/save`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function getSavedCoupons() {
+  const res = await fetch(`${API_BASE}/api/coupons/saved`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function getExpiringSoon(days = 3) {
+  const res = await fetch(`${API_BASE}/api/coupons/reminders/expiring-soon?days=${days}`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function askCouponAssistant(query, limit = 5) {
+  const res = await fetch(`${API_BASE}/api/coupons/assistant`, {
+    method: "POST",
+    headers: authHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ query, limit }),
+  });
+  return readJson(res);
+}
+
+export async function getSellerAnalytics() {
+  const res = await fetch(`${API_BASE}/api/seller/analytics`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function getAdminCoupons() {
+  const res = await fetch(`${API_BASE}/api/admin/coupons`, {
+    headers: authHeaders(),
+  });
+  return readJson(res);
+}
+
+export async function adminDeleteCoupon(id) {
+  const res = await fetch(`${API_BASE}/api/admin/coupons/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error("Failed to remove coupon");
+}
+
 export async function getSellerRequests() {
   const res = await fetch(`${API_BASE}/api/coupon-requests/seller`, {
     headers: authHeaders(),
@@ -141,6 +225,27 @@ export async function sendChatMessage(chatRoomId, message) {
   return readJson(res);
 }
 
-export function getChatSocketUrl() {
-  return API_BASE.replace(/^http/, "ws") + "/ws/websocket";
+export async function uploadChatMedia(chatRoomId, file) {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE}/api/chats/${chatRoomId}/media`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+  return readJson(res);
 }
+
+export function getChatSocketUrl() {
+  return API_BASE.replace(/^https:/, "wss:").replace(/^http:/, "ws:") + "/ws/websocket";
+}
+
+export function resolveMediaUrl(url) {
+  if (!url) return "";
+  try {
+    return new URL(url, API_BASE).toString();
+  } catch {
+    return url;
+  }
+}
+
