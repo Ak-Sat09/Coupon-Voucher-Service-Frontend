@@ -1,31 +1,46 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock3, MessageCircle, Search, ShoppingBag, Sparkles, Store, Tag } from "lucide-react";
-import { createOrGetChatRoom, getBuyerChats, getBuyerRequests, getCoupons } from "./CouponService";
-import ChatPanel from "./ChatPanel";
+import { Bell, Bookmark, MessageCircle, Search, Ticket } from "lucide-react";
+import { getCoupons, getExpiringSoon, getSavedCoupons, saveCoupon, unsaveCoupon } from "./CouponService";
 
-function CouponCard({ coupon, onView, onChat }) {
+const PRIMARY = "#0D9488";
+const cx = (...p) => p.filter(Boolean).join(" ");
+
+function CouponCard({ coupon, saved, onToggleSave, onView }) {
   const expiry = coupon.expiryDate ? new Date(coupon.expiryDate) : null;
-  const expired = expiry ? expiry.getTime() < Date.now() : false;
+  const expired = coupon.expired;
 
   return (
-    <article className="coupon-card">
-      <div className="coupon-card__top">
-        <div className="coupon-card__icon"><Tag size={18} /></div>
-        <span className={`status ${expired ? "status--muted" : "status--live"}`}>
-          {expired ? "Expired" : "Active"}
+    <article className="group rounded-xl border border-[#DCEFEC] bg-white p-5 transition hover:border-[#0D9488]/30 hover:shadow-[0_10px_28px_-16px_rgba(13,148,136,0.35)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#0D9488]/10 text-[#0D9488]">
+          <Ticket size={16} />
+        </div>
+        <button
+          className={cx("text-[#CFE7E3] transition hover:text-[#0D9488]", saved && "text-[#0D9488]")}
+          onClick={() => onToggleSave(coupon)}
+          aria-label={saved ? "Unsave" : "Save"}
+          type="button"
+        >
+          <Bookmark size={17} fill={saved ? "currentColor" : "none"} />
+        </button>
+      </div>
+
+      <h3 className="mt-3 line-clamp-2 font-['Poppins'] text-[1.05rem] font-bold leading-snug text-[#18181B]">
+        {coupon.name}
+      </h3>
+
+      <div className="mt-4 flex items-center justify-between border-t border-[#E7FAF7] pt-3">
+        <span className={cx("text-[11.5px] font-medium", expired ? "text-[#CFE7E3]" : "text-[#9291A5]")}>
+          {expired ? "Expired" : expiry ? `Until ${expiry.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
         </span>
-      </div>
-      <h3>{coupon.name}</h3>
-      <p>{coupon.description || "No description added by seller."}</p>
-      <div className="coupon-card__meta">
-        <span>Seller #{coupon.sellerId || "N/A"}</span>
-        {expiry && <span>{expiry.toLocaleDateString()}</span>}
-      </div>
-      <div className="coupon-card__actions">
-        <button className="btn btn--dark" onClick={() => onView(coupon.id)}>View deal</button>
-        <button className="icon-btn" onClick={() => onChat(coupon.id)} aria-label="Chat with seller">
-          <MessageCircle size={17} />
+        <button
+          className="inline-flex h-8 items-center rounded-full px-3.5 text-[12.5px] font-semibold text-white transition group-hover:brightness-105"
+          style={{ backgroundColor: PRIMARY }}
+          type="button"
+          onClick={() => onView(coupon.id)}
+        >
+          View deal
         </button>
       </div>
     </article>
@@ -35,161 +50,108 @@ function CouponCard({ coupon, onView, onChat }) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const [coupons, setCoupons] = useState([]);
-  const [chats, setChats] = useState([]);
-  const [requests, setRequests] = useState([]);
-  const [activeChat, setActiveChat] = useState(null);
+  const [savedIds, setSavedIds] = useState(new Set());
   const [query, setQuery] = useState("");
+  const [expiringCount, setExpiringCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [chatLoadingId, setChatLoadingId] = useState(null);
 
   useEffect(() => {
-    Promise.allSettled([getCoupons(), getBuyerChats(), getBuyerRequests()])
-      .then(([couponResult, chatResult, requestResult]) => {
+    Promise.allSettled([getCoupons(), getSavedCoupons(), getExpiringSoon(3)])
+      .then(([couponResult, savedResult, expiringResult]) => {
         if (couponResult.status === "fulfilled") setCoupons(couponResult.value || []);
-        if (chatResult.status === "fulfilled") setChats(chatResult.value || []);
-        if (requestResult.status === "fulfilled") setRequests(requestResult.value || []);
+        if (savedResult.status === "fulfilled") {
+          setSavedIds(new Set((savedResult.value || []).map((row) => row.coupon?.id).filter(Boolean)));
+        }
+        if (expiringResult.status === "fulfilled") setExpiringCount((expiringResult.value || []).length);
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredCoupons = useMemo(() => {
+  const filtered = useMemo(() => {
     const clean = query.trim().toLowerCase();
     if (!clean) return coupons;
-    return coupons.filter((coupon) =>
-      [coupon.name, coupon.description, coupon.couponCode]
-        .filter(Boolean)
-        .some((field) => field.toLowerCase().includes(clean))
-    );
+    return coupons.filter((c) => c.name.toLowerCase().includes(clean));
   }, [coupons, query]);
 
-  const startChat = useCallback(async (couponId) => {
-    setChatLoadingId(couponId);
-    try {
-      const room = await createOrGetChatRoom(couponId);
-      setActiveChat(room);
-      setChats((prev) => {
-        const exists = prev.some((item) => item.id === room.id);
-        return exists ? prev.map((item) => item.id === room.id ? room : item) : [room, ...prev];
-      });
-    } finally {
-      setChatLoadingId(null);
-    }
-  }, []);
+  const toggleSave = useCallback(async (coupon) => {
+    const wasSaved = savedIds.has(coupon.id);
+    if (wasSaved) await unsaveCoupon(coupon.id);
+    else await saveCoupon(coupon.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      wasSaved ? next.delete(coupon.id) : next.add(coupon.id);
+      return next;
+    });
+  }, [savedIds]);
 
   return (
-    <div className="app-shell">
-      <header className="topnav">
-        <div className="brand-mark">
-          <div className="brand-mark__icon"><ShoppingBag size={18} /></div>
-          <div>
-            <strong>CouponVault</strong>
-            <span>Buyer workspace</span>
+    <div className="min-h-screen bg-white font-['Inter']">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+      `}</style>
+
+      <header className="flex h-16 items-center justify-between border-b border-[#DCEFEC] bg-white px-6 sm:px-10">
+        <div className="flex items-center gap-2">
+          <div className="grid h-8 w-8 place-items-center rounded-lg text-white" style={{ backgroundColor: PRIMARY }}>
+            <Ticket size={16} />
           </div>
+          <span className="font-['Poppins'] text-[16px] font-bold text-[#18181B]">CouponVault</span>
         </div>
-        <button className="btn btn--ghost" onClick={() => navigate("/seller")}>
-          <Store size={16} /> Seller portal
+        <button
+          type="button"
+          className="grid h-9 w-9 place-items-center rounded-full text-[#9291A5] transition hover:bg-[#E7FAF7] hover:text-[#0D9488]"
+          aria-label="Chat"
+          onClick={() => navigate("/chat")}
+        >
+          <MessageCircle size={18} />
         </button>
       </header>
 
-      <main className="workspace workspace--buyer">
-        <section className="hero-panel">
-          <div>
-            <div className="eyebrow"><Sparkles size={14} /> Live marketplace</div>
-            <h1>Browse deals and talk to sellers before you request.</h1>
-            <p>Find verified coupons, open details, or start a conversation directly from any coupon.</p>
-          </div>
-          <div className="hero-stats">
-            <div><strong>{coupons.length}</strong><span>Total coupons</span></div>
-            <div><strong>{chats.length}</strong><span>My chats</span></div>
-            <div><strong>{requests.length}</strong><span>Requests</span></div>
-          </div>
-        </section>
+      <main className="mx-auto max-w-[1100px] px-6 py-10 sm:px-10">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-['Poppins'] text-[1.7rem] font-bold text-[#18181B]">Your deals</h1>
+          <label className="flex h-11 w-full max-w-[280px] items-center gap-2 rounded-full border border-[#CFEAE6] bg-white px-4 transition focus-within:border-[#0D9488] focus-within:ring-4 focus-within:ring-[#0D9488]/10">
+            <Search size={15} className="text-[#B4B2C4]" />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search deals"
+              className="min-w-0 flex-1 bg-transparent text-[13.5px] text-[#18181B] outline-none placeholder:text-[#B4B2C4]"
+            />
+          </label>
+        </div>
 
-        <section className="content-grid">
-          <div className="main-column">
-            <div className="toolbar">
-              <div className="search-box">
-                <Search size={17} />
-                <input
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search by coupon name, code, or description"
-                />
-              </div>
-              <span className="result-count">{filteredCoupons.length} results</span>
+        {expiringCount > 0 && (
+          <div className="mt-5 flex items-center gap-2 rounded-xl bg-[#0D9488]/8 px-4 py-2.5 text-[13px] font-medium text-[#0D9488]">
+            <Bell size={14} />
+            {expiringCount} saved coupon{expiringCount > 1 ? "s" : ""} expiring soon
+          </div>
+        )}
+
+        <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {loading ? (
+            Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="h-[150px] animate-pulse rounded-xl border border-[#DCEFEC] bg-[#F5FBFA]" />
+            ))
+          ) : filtered.length === 0 ? (
+            <div className="sm:col-span-2 lg:col-span-3">
+              <p className="rounded-xl border border-dashed border-[#CFEAE6] bg-white py-14 text-center text-[13.5px] text-[#9291A5]">
+                No deals match your search.
+              </p>
             </div>
-
-            <div className="coupon-grid">
-              {loading ? (
-                Array.from({ length: 6 }, (_, index) => <div className="skeleton-card" key={index} />)
-              ) : filteredCoupons.length === 0 ? (
-                <div className="empty-state">No coupons match your search.</div>
-              ) : (
-                filteredCoupons.map((coupon) => (
-                  <CouponCard
-                    coupon={coupon}
-                    key={coupon.id}
-                    onView={(id) => navigate(`/coupon/${id}`)}
-                    onChat={startChat}
-                    loading={chatLoadingId === coupon.id}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-
-          <aside className="side-column">
-            <section className="inbox-card">
-              <div className="section-head">
-                <div>
-                  <div className="eyebrow"><Clock3 size={14} /> Tracker</div>
-                  <h2>My requests</h2>
-                </div>
-              </div>
-              <div className="request-list">
-                {requests.length === 0 ? (
-                  <p className="muted-copy">Requested coupons will appear here.</p>
-                ) : requests.map((request) => (
-                  <div className="request-mini" key={request.requestId}>
-                    <div>
-                      <strong>{request.couponName || `Coupon #${request.couponId}`}</strong>
-                      <span>Seller #{request.sellerId}</span>
-                    </div>
-                    <span className={`status status--${(request.status || "PENDING").toLowerCase()}`}>
-                      {request.status || "PENDING"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section className="inbox-card">
-              <div className="section-head">
-                <div>
-                  <div className="eyebrow">Inbox</div>
-                  <h2>My chats</h2>
-                </div>
-              </div>
-              <div className="chat-list">
-                {chats.length === 0 ? (
-                  <p className="muted-copy">Start a chat from any coupon card.</p>
-                ) : chats.map((chat) => (
-                  <button
-                    className={`chat-row ${activeChat?.id === chat.id ? "chat-row--active" : ""}`}
-                    key={chat.id}
-                    onClick={() => setActiveChat(chat)}
-                  >
-                    <span>{chat.couponName || `Coupon #${chat.couponId}`}</span>
-                    <small>{chat.lastMessage || "No messages yet"}</small>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <ChatPanel chatRoom={activeChat} compact />
-          </aside>
-        </section>
+          ) : (
+            filtered.map((coupon) => (
+              <CouponCard
+                key={coupon.id}
+                coupon={coupon}
+                saved={savedIds.has(coupon.id)}
+                onToggleSave={toggleSave}
+                onView={(id) => navigate(`/coupon/${id}`)}
+              />
+            ))
+          )}
+        </div>
       </main>
     </div>
   );
