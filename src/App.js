@@ -8,6 +8,7 @@ import Dashboard from "./components/Dashboard";
 import CouponDetail from "./components/CouponDetails";
 import SellerDashboard from "./components/SellerDashboard";
 import RoleSelect from "./components/RoleSelect";
+import TaskSheet from "./pages/TaskSheet";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         {/* Auth */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+<Route path="/tasks" element={<TaskSheet />} />
 
         {/* Coupons */}
         <Route path="/coupons" element={<Dashboard />} />
